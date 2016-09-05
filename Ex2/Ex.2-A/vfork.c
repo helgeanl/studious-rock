@@ -9,10 +9,12 @@ int main(){
 
 	if (pid == 0){
 		int j;
+		printf("PID: %d\n",pid);
 		for(j=0;j<100;j++,i++,global++);
 		printf("Child process: %d, global: %d\n",i,global);
 	}else if(pid > 0){
 		int j;
+		printf("PID: %d\n",pid);
 		for (j=0;j<100;j++,i++,global++);
 		printf("Parent process: %d, global: %d\n",i,global);
 	}else{
