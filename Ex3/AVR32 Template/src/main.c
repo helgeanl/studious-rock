@@ -75,7 +75,7 @@ int main (void)
 	{
 		gpio_toggle_pin(LED0_GPIO);
 		printf("tick\n");
-		
+		printf("tock\n");
 		busy_delay_ms(500);
 	}
 }
