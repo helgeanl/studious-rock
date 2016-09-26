@@ -2,12 +2,12 @@
 
 # program executable name
 TARGET = RTLINUX
-CC = clang
+CC = gcc
 # compiler flags
-CFLAGS = -g -Wall
+CFLAGS = -g -Wall -D_GNU_SOURCE
 
 # linker flags
-LDFLAGS = -g -lcomedi -lrt -pthread -lm
+LDFLAGS = -g -lrt -pthread -lcomedi  -lm
 
 # list of sources
 SOURCES = $(shell find -name "*.c")
@@ -20,7 +20,7 @@ OBJECTS = $(SOURCES:.c=.o)
 
 # link programs
 $(TARGET): $(OBJECTS)
-	$(CC) $(LDFLAGS) -o $@ $^
+	$(CC) -o $@ $^ $(LDFLAGS)
 
 # compile
 %.o : %.c
