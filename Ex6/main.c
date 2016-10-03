@@ -18,11 +18,12 @@ void* threadFunc(int *channel){
     int read = io_read(*channel);
     io_write(*channel, read);
     rt_task_yield();
-  /*  if(!read){
-      io_write(*channel,0);
-      rt_task_sleep(5000);
-      io_write(*channel,1);
-    }*/
+  //  if(!read){
+  //    io_write(*channel,0);
+  //    rt_task_yield();
+  //    rt_task_sleep(5000);
+  //    io_write(*channel,1);
+  //  }
   }
 
 }
@@ -71,19 +72,19 @@ int main(){
   //rt_task_start(&print, threadPrint,&print);
 
   RT_TASK testA;
-  rt_task_create(&testA,"A", 0, 0,T_CPU(1)|T_JOINABLE);
-  rt_task_set_periodic(&testA, TM_NOW, 1000000);
+  rt_task_create(&testA,"A", 0, 1,T_CPU(1)|T_JOINABLE);
+  rt_task_set_periodic(&testA, TM_NOW, 1000);
   rt_task_start(&testA, threadFunc,&A);
 
   RT_TASK testB;
-  rt_task_create(&testB,"B", 0, 0,T_CPU(1)|T_JOINABLE);
-  rt_task_set_periodic(&testB, TM_NOW, 1000000);
-  //rt_task_start(&testB, threadFunc,&B);
+  rt_task_create(&testB,"B", 0, 1,T_CPU(1)|T_JOINABLE);
+  rt_task_set_periodic(&testB, TM_NOW, 1000);
+  rt_task_start(&testB, threadFunc,&B);
 
   RT_TASK testC;
-  rt_task_create(&testC,"C", 0, 0,T_CPU(1)|T_JOINABLE);
-  rt_task_set_periodic(&testC, TM_NOW, 1000000);
-  //rt_task_start(&testC, threadFunc,&C);
+  rt_task_create(&testC,"C", 0, 1,T_CPU(1)|T_JOINABLE);
+  rt_task_set_periodic(&testC, TM_NOW, 1000);
+  rt_task_start(&testC, threadFunc,&C);
 
   pthread_t threadDist1;
   pthread_t threadDist2;
