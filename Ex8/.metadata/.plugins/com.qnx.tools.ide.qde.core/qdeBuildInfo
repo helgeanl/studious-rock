@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<QdeProjectsBuildInfo>
+<qdeBuildInfo IMemento.internal.id="C:/Users/mortrost/sanntidsystemer_ov8/Program2" buildConfig="_x86_r" projectName="Program2">
+<srcDirs>
+<element>C:/Users/mortrost/sanntidsystemer_ov8/Program2/x86/o</element>
+<element>C:/Users/mortrost/sanntidsystemer_ov8/Program2/x86</element>
+<element>C:/Users/mortrost/sanntidsystemer_ov8/Program2</element>
+</srcDirs>
+<libDirs>
+<element>C:/Users/mortrost/sanntidsystemer_ov8/Program2/x86/o</element>
+<element>C:/QNX650/target/qnx6/x86/lib</element>
+<element>C:/QNX650/target/qnx6/x86/usr/lib</element>
+</libDirs>
+<incDirs>
+<element>C:/QNX650/target/qnx6/usr/include</element>
+<element>C:/Users/mortrost/sanntidsystemer_ov8/Program2/x86/o</element>
+<element>C:/Users/mortrost/sanntidsystemer_ov8/Program2/x86</element>
+<element>C:/Users/mortrost/sanntidsystemer_ov8/Program2</element>
+</incDirs>
+<libs/>
+<SRCS>
+<element>C:/Users/mortrost/sanntidsystemer_ov8/Program2/Program2.c</element>
+</SRCS>
+</qdeBuildInfo>
+<qdeBuildInfo IMemento.internal.id="C:/Users/mortrost/sanntidsystemer_ov8/Hello" buildConfig="_x86_r" projectName="Hello">
+<srcDirs>
+<element>C:/Users/mortrost/sanntidsystemer_ov8/Hello/x86/o</element>
+<element>C:/Users/mortrost/sanntidsystemer_ov8/Hello/x86</element>
+<element>C:/Users/mortrost/sanntidsystemer_ov8/Hello</element>
+</srcDirs>
+<libDirs>
+<element>C:/Users/mortrost/sanntidsystemer_ov8/Hello/x86/o</element>
+<element>C:/QNX650/target/qnx6/x86/lib</element>
+<element>C:/QNX650/target/qnx6/x86/usr/lib</element>
+</libDirs>
+<incDirs>
+<element>C:/QNX650/target/qnx6/usr/include</element>
+<element>C:/Users/mortrost/sanntidsystemer_ov8/Hello/x86/o</element>
+<element>C:/Users/mortrost/sanntidsystemer_ov8/Hello/x86</element>
+<element>C:/Users/mortrost/sanntidsystemer_ov8/Hello</element>
+</incDirs>
+<libs/>
+<SRCS>
+<element>C:/Users/mortrost/sanntidsystemer_ov8/Hello/Hello.c</element>
+</SRCS>
+</qdeBuildInfo>
+</QdeProjectsBuildInfo>

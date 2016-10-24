@@ -1,0 +1,48 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
+#include <fcntl.h>
+#include <sys/dispatch.h>
+#include <sys/mman.h>
+
+struct pid_data{
+	pthread_mutex_t pid_mutex;
+	pid_t pid;
+};
+
+int main(int argc, char *argv[]) {
+	printf("Welcome to Hello, we are creating memory\n");
+	int fd = shm_open("/sharepid", O_RDWR |O_CREAT, S_IRWXU);
+
+	ftruncate(fd, sizeof(struct pid_data));
+	struct pid_data *ptr = (struct pid_data*)mmap(0,sizeof(struct pid_data),PROT_READ | PROT_WRITE,MAP_SHARED,fd,0);
+
+
+
+
+	pthread_mutexattr_t myattr;
+	pthread_mutexattr_setpshared(&myattr, PTHREAD_PROCESS_SHARED);
+	pthread_mutex_init(&ptr->pid_mutex, &myattr );
+
+	pthread_mutex_lock(&ptr->pid_mutex);
+	ptr->pid = getpid();
+	printf("PID written: %i", ptr->pid);
+	pthread_mutex_unlock(&ptr->pid_mutex);
+
+	// Assignment B Server
+
+
+	int buffer;
+
+	int ch_id = ChannelCreate(0);
+	int msg_id = MsgReceive(ch_id, &buffer, sizeof(int),NULL);
+	buffer = buffer*2;
+	MsgReply(msg_id, 0, &buffer, sizeof(int));
+
+	printf("Data buffer received from Client:  %i", dataBuffer);
+
+	return EXIT_SUCCESS;
+}
+

@@ -1,0 +1,47 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
+#include <fcntl.h>
+#include <sys/dispatch.h>
+#include <sys/mman.h>
+
+struct pid_data{
+	pthread_mutex_t pid_mutex;
+	pid_t pid;
+};
+
+int main(int argc, char *argv[]) {
+	printf("Welcome to Program2, we are reading memory\n");
+	int fd = shm_open("/sharepid", O_RDWR, S_IRWXU);
+
+	struct pid_data *ptr = (struct pid_data*)mmap(0,sizeof(struct pid_data),PROT_READ | PROT_WRITE,MAP_SHARED,fd,0);
+
+
+
+
+	pthread_mutexattr_t myattr;
+	pthread_mutexattr_setpshared(&myattr, PTHREAD_PROCESS_SHARED);
+	pthread_mutex_init(&ptr->pid_mutex, &myattr );
+
+
+
+	pthread_mutex_lock(&ptr->pid_mutex);
+	int server_PID = ptr->pid;
+	printf("PID read: %i",ptr->pid);
+	pthread_mutex_unlock(&ptr->pid_mutex);
+
+
+	//Assignment B Client
+
+	int data = 42;
+	int data_buffer;
+
+	int channel_id = ConnectAttatch(0,server_PID,1,0,0);
+	MsgSend(channel_id,&data, sizeof(int),&data_buffer, sizeof(int));
+
+
+	return EXIT_SUCCESS;
+}
+

@@ -1,0 +1,80 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
+#include <fcntl.h>
+#include <sys/dispatch.h>
+#include <sys/mman.h>
+
+struct pid_data{
+	pthread_mutex_t pid_mutex;
+	pid_t pid;
+};
+static int server_PID;
+
+void send_message(char* s){
+	char data_buffer[100];
+
+	int channel_id = ConnectAttach(0,server_PID,1,0,0);
+	int message_status = MsgSend(channel_id,s, sizeof(int),&data_buffer, 100*sizeof(char));
+
+	ConnectDetach(channel_id);
+
+}
+int main(int argc, char *argv[]) {
+	printf("Welcome to Program2, we are reading memory\n");
+	int fd = shm_open("/sharepid", O_RDWR, S_IRWXU);
+
+	struct pid_data *ptr = (struct pid_data*)mmap(0,sizeof(struct pid_data),PROT_READ | PROT_WRITE,MAP_SHARED,fd,0);
+
+
+
+
+	pthread_mutexattr_t myattr;
+	pthread_mutexattr_setpshared(&myattr, PTHREAD_PROCESS_SHARED);
+	pthread_mutex_init(&ptr->pid_mutex, &myattr );
+
+
+
+	pthread_mutex_lock(&ptr->pid_mutex);
+	server_PID = ptr->pid;
+	printf("PID read: %i\n",ptr->pid);
+	pthread_mutex_unlock(&ptr->pid_mutex);
+
+
+	//Assignment B Client
+
+	int data = 42;
+	int data_buffer;
+
+	int channel_id = ConnectAttach(0,server_PID,1,0,0);
+	int message_status = MsgSend(channel_id,&data, sizeof(int),&data_buffer, sizeof(int));
+
+	ConnectDetach(channel_id);
+
+	printf("Data buffer received from Server:  %i\n", data_buffer);
+
+
+	//Assignment C Client
+
+	pthread_t thread1;
+	pthread_create(&thread1,NULL,send_message,"thread1");
+
+	pthread_t thread2;
+	pthread_create(&thread2,NULL,send_message,"thread2");
+
+	pthread_t thread3;
+	pthread_create(&thread3,NULL,send_message,"thread3");
+
+	pthread_t thread4;
+	pthread_create(&thread4,NULL,send_message,"thread4");
+
+	pthread_join(thread1,NULL);
+	pthread_join(thread2,NULL);
+	pthread_join(thread3,NULL);
+	pthread_join(thread4,NULL);
+
+return EXIT_SUCCESS;
+}
+
