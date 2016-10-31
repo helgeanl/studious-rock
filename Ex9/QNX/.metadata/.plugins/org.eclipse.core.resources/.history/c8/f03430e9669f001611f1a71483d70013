@@ -1,0 +1,170 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <stddef.h>
+#include <string.h>
+#include <unistd.h>
+#include <errno.h>
+#include <sys/iofunc.h>
+#include <sys/dispatch.h>
+#include <pthread.h>
+#include "fifo.h"
+
+dispatch_t              *dpp;
+resmgr_attr_t           resmgr_attr;
+dispatch_context_t      *ctp;
+resmgr_connect_funcs_t  connect_funcs;
+resmgr_io_funcs_t       io_funcs;
+iofunc_attr_t           io_attr;
+
+int io_read(resmgr_context_t *ctp, io_read_t *msg, iofunc_ocb_t *ocb);
+int io_write(resmgr_context_t *ctp, io_write_t *msg, iofunc_ocb_t *ocb);
+
+char buf[] = "Hello World\n";
+char char_array[255];
+int count = 0;
+int dir = 1;
+pthread_mutex_t mutex;
+pthread_mutex_t c_mutex;
+
+fifo_t queue;
+
+void error(char *s)
+{
+	perror(s);
+	exit(EXIT_FAILURE);
+}
+
+
+void* count_thread_func(){
+	while(1){
+		pthread_mutex_lock(&c_mutex);
+		if(dir == 1){
+			count++;
+		}
+		else if(dir == -1){
+			count--;
+		}
+		pthread_mutex_unlock(&c_mutex);
+		delay(100);
+	}
+	return NULL;
+}
+
+void* check_queue(){
+	while(1){
+		pthread_mutex_lock(&queue.resource_mutex);
+		if (fifo_status(&queue)){
+			MsgReply(fifo_rem_blocked_id(&queue), 0, fifo_rem_string(&queue), WIDTH);
+		}
+		pthread_mutex_unlock(&queue.resource_mutex);
+	}
+}
+
+int main(int argc, char *argv[]) {
+	printf("Start resource manager\n");
+	pthread_mutex_init(&mutex, NULL); // Init mutex
+	char_array[0] = '\0';
+
+	// create dispatch.
+	if (!(dpp = dispatch_create()))
+		error("Create dispatch");
+
+	// initialize resource manager attributes.
+	memset(&resmgr_attr, 0, sizeof(resmgr_attr));
+	resmgr_attr.nparts_max = 1;
+	resmgr_attr.msg_max_size = 2048;
+
+	// set standard connect and io functions.
+	iofunc_func_init(_RESMGR_CONNECT_NFUNCS, &connect_funcs, _RESMGR_IO_NFUNCS, &io_funcs);
+	iofunc_attr_init(&io_attr, S_IFNAM | 0666, 0, 0);
+
+	// override functions
+	io_funcs.read = io_read;
+	io_funcs.write = io_write;
+
+	// establish resource manager
+	if (resmgr_attach(dpp, &resmgr_attr, "/dev/myresource", _FTYPE_ANY, 0, &connect_funcs, &io_funcs, &io_attr) < 0)
+		error("Resmanager attach");
+	ctp = dispatch_context_alloc(dpp);
+
+	pthread_t count_thread;
+	pthread_create(&count_thread,NULL,count_thread_func,NULL);
+
+
+	init_fifo(&queue);
+
+
+
+	// wait forever, handling messages.
+	while(1)
+	{
+		if (!(ctp = dispatch_block(ctp)))
+			error("Dispatch block");
+		dispatch_handler(ctp);
+	}
+
+	exit(EXIT_SUCCESS);
+}
+
+int io_read(resmgr_context_t *ctp, io_read_t *msg, iofunc_ocb_t *ocb)
+{
+
+	if(!ocb->offset)
+	{
+
+		if (fifo_status(&queue)){
+			fifo_rem_string(&queue, char_array);
+		}
+		else{
+			int nonblock;
+			iofunc_read_verify(ctp, msg, ocb, &nonblock);
+
+			if (!nonblock){
+				fifo_add_blocked_id(&queue, ctp->rcvid);
+				return (_RESMGR_NOREPLY);
+			}else{
+				return (EAGAIN);
+			}
+		}
+
+		// set data to return
+
+		SETIOV(ctp->iov, char_array, strlen(char_array));
+		_IO_SET_READ_NBYTES(ctp, strlen(char_array));
+
+		// increase the offset (new reads will not get the same data)
+		ocb->offset = 1;
+
+		// return
+		return (_RESMGR_NPARTS(1));
+	}
+	else
+	{
+		// set to return no data
+		_IO_SET_READ_NBYTES(ctp, 0);
+
+		// return
+		return (_RESMGR_NPARTS(0));
+	}
+
+}
+
+int io_write(resmgr_context_t *ctp, io_write_t *msg, iofunc_ocb_t *ocb)
+{
+
+	printf("Testing....\n");
+	pthread_mutex_lock(&mutex);
+
+
+	 /* set up the number of bytes (returned by client's write()) */
+	_IO_SET_WRITE_NBYTES (ctp, msg->i.nbytes);
+	resmgr_msgread(ctp,&char_array,msg->i.nbytes, sizeof(msg->i));
+	printf("Received: %s\n",char_array);
+	fifo_add_string(&queue,char_array);
+
+	pthread_mutex_unlock(&mutex);
+
+
+	return (_RESMGR_NPARTS(0));
+
+}
